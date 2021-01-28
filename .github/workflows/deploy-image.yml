@@ -1,0 +1,43 @@
+name: Tag push demo
+
+# Run workflow on tags starting with v (eg. v2, v1.2.0)
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get tag and pass to other steps
+        id: version
+        run: |
+          # Option 1
+          # Strip git ref prefix from version
+          CLEAN_TAG_1=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && CLEAN_TAG_1=$(echo $CLEAN_TAG_1 | sed -e 's/^v//')
+
+          echo "CLEAN_TAG_1=${CLEAN_TAG_1}" >> $GITHUB_ENV
+
+          # Option 2
+          CLEAN_TAG_2=${GITHUB_REF#refs/tags/}
+
+          echo "CLEAN_TAG_2=${CLEAN_TAG_2}" >> $GITHUB_ENV
+
+          ## Using workflow commands: https://docs.github.com/en/enterprise-server@2.22/actions/reference/workflow-commands-for-github-actions
+
+          # Option 3
+          echo ::set-env name=CLEAN_TAG_3::${GITHUB_REF#refs/tags/}
+
+          # Option 4
+          echo ::set-output name=CLEAN_TAG_4::${GITHUB_REF#refs/tags/}
+      - name: Print out tag
+        run: |
+          echo "Option 1: CLEAN_TAG_1 = ${{ env.CLEAN_TAG_1 }}"
+          echo "Option 2: CLEAN_TAG_2 = ${{ env.CLEAN_TAG_2 }}"
+          echo "Option 3: CLEAN_TAG_3 = ${{ env.CLEAN_TAG_3 }}"
+          echo "Option 4: CLEAN_TAG_4 = ${{ steps.version.outputs.CLEAN_TAG_4 }}"
+
