@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Get tag and pass to other steps
         id: version
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         run: |
           # Option 1
           # Strip git ref prefix from version
